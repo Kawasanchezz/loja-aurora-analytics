@@ -3,7 +3,7 @@ PYTHON ?= python
 .PHONY: install init-db seed report all test
 
 install:
-	$(PYTHON) -m pip install -r requirements.txt -c constraints.txt
+	$(PYTHON) -m pip install -r requirements.txt
 	$(PYTHON) -m pip install -e .
 
 init-db:

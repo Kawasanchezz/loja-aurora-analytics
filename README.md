@@ -162,7 +162,7 @@ Windows (PowerShell), sem precisar ativar o ambiente:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt -c constraints.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m pip install -e .
 ```
 
@@ -171,7 +171,7 @@ Linux/macOS:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt -c constraints.txt   # constraints.txt = versões testadas
+pip install -r requirements.txt
 pip install -e .
 ```
 
@@ -243,7 +243,6 @@ src/aurora/charts.py        gráficos PNG
 src/aurora/report.py        relatório Markdown automático
 src/aurora/cli.py           comandos init-db, seed, report e all
 src/aurora/safety.py        confirmação antes de apagar dados e trava dos testes
-constraints.txt             versões testadas das dependências
 tests/                      pytest
 reports/                    relatório e figuras gerados
 ```
@@ -265,8 +264,8 @@ reports/                    relatório e figuras gerados
 - **Operações destrutivas com trava:** `init-db`, `seed` e `all` exigem digitar o nome do banco (ou `--yes`), e recusam rodar sem terminal.
 - **Banco:** use um usuário dedicado com acesso só ao banco `aurora`, nunca o root. Se o seu MySQL aceitar conexões de rede, restrinja o acesso do usuário a `localhost`, como no exemplo do README.
 - **SQL parametrizado:** nenhuma consulta é montada por concatenação com dados externos.
-- **Dependências com versões testadas** em `constraints.txt`. Para checar vulnerabilidades conhecidas, rode `pip install pip-audit && pip-audit -r requirements.txt`
-  (a ferramenta consulta a base de avisos do PyPI pela internet; ela não foi executada durante o desenvolvimento).
+- **Dependências monitoradas:** o Dependabot e o `pip-audit` (no CI) vigiam vulnerabilidades conhecidas. Para checar na sua máquina, rode `pip install pip-audit && pip-audit -r requirements.txt`
+  (a ferramenta consulta a base de avisos do PyPI pela internet). Na última verificação local, nenhuma vulnerabilidade conhecida foi encontrada.
 - **Sem dados pessoais:** tudo é gerado por script; e-mails usam o domínio reservado `example.com`.
 - **Automação no GitHub:** o fluxo [CI e segurança](.github/workflows/ci.yml) roda a cada push, em pull requests e toda segunda-feira: Bandit (análise estática), `pip-audit` (vulnerabilidades nas dependências) e os testes completos, com um MySQL descartável.
   Ele tem permissão mínima (`contents: read`) e as ações são fixadas por hash de commit. O [Dependabot](.github/dependabot.yml) abre pull requests para atualizar bibliotecas e ações.
@@ -279,7 +278,7 @@ reports/                    relatório e figuras gerados
 - Sem custo de frete, de marketing ou de estoque; o lucro é bruto. Sem CAC/ROAS por canal.
 - Cancelamento e devolução são ao nível do pedido, sem estorno parcial nem data de devolução.
 - O pipeline foi validado em um MySQL 8.0.46 instalado localmente; outras versões e sistemas operacionais não foram testados.
-- A auditoria de vulnerabilidades das dependências (`pip-audit`) não foi executada.
+- O `requirements.txt` fixa só versões mínimas (`>=`): uma instalação futura pode trazer versões mais novas que as testadas. O CI semanal ajuda a detectar quebras.
 - Os testes de integração exigem um banco de teste configurado e por isso ficam desligados por padrão.
 
 **Próximos passos**

@@ -13,7 +13,7 @@ Evite abrir uma issue pública com detalhes de uma falha antes de ela ser corrig
 - Credenciais apenas em variáveis de ambiente (`.env`, ignorado pelo Git); o `.env.example` não tem valores reais.
 - Consultas SQL estáticas ou parametrizadas, sem concatenação de dados externos.
 - Operações que apagam dados pedem confirmação (ou `--yes`) e os testes de integração só aceitam bancos terminados em `_test`.
-- Dependências com versões testadas em `constraints.txt`, monitoradas pelo Dependabot e pelo `pip-audit` (CI).
+- Dependências monitoradas pelo Dependabot e pelo `pip-audit` (CI).
 - Análise estática com Bandit e testes automáticos a cada alteração (GitHub Actions, com permissão mínima e ações fixadas por hash).
 
 ## Uso do código
