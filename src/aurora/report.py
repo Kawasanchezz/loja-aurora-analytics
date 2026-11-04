@@ -1,7 +1,9 @@
 """Geração do relatório em Markdown. Todo número vem dos resultados da análise (nada é digitado à mão)."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -9,7 +11,7 @@ from aurora.analysis.pipeline import AnalysisResults
 from aurora.labels import CHANNEL_LABELS, PAYMENT_LABELS, brl, month_label, number_br, percent
 
 
-def md_table(df: pd.DataFrame, headers: dict[str, str], formats: dict[str, callable] | None = None) -> str:
+def md_table(df: pd.DataFrame, headers: dict[str, str], formats: dict[str, Callable[[Any], str]] | None = None) -> str:
     """Tabela Markdown com as colunas de ``headers`` (coluna -> título)."""
     formats = formats or {}
     lines = ["| " + " | ".join(headers.values()) + " |", "|" + "|".join("---" for _ in headers) + "|"]
@@ -62,7 +64,25 @@ def _retention_line(results: AnalysisResults) -> str:
     return ", ".join(parts) if parts else "sem dados suficientes"
 
 
+def check_inputs(results: AnalysisResults) -> None:
+    """Garante que os grupos usados nas conclusões existem; evita KeyError/IndexError com dados parciais."""
+    missing = []
+    if not {"Com cupom", "Sem cupom"} <= set(results.coupon_summary["coupon_group"]):
+        missing.append("pedidos com e sem cupom")
+    if not (results.coupons["coupon"] != "Sem cupom").any():
+        missing.append("pedidos com algum cupom")
+    methods = set(results.payments["payment_method"])
+    if "boleto" not in methods or len(methods) < 2:
+        missing.append("pedidos pagos com boleto e com outra forma de pagamento")
+    missing.extend(name for name in ("categories", "abc", "channels", "states", "monthly", "rfm_segments")
+                   if getattr(results, name).empty)
+    if missing:
+        raise RuntimeError("Dados insuficientes para o relatório; faltam: " + ", ".join(missing)
+                           + ". Rode o comando seed para carregar os dados completos.")
+
+
 def build_report(results: AnalysisResults) -> str:
+    check_inputs(results)
     k = results.kpis
     monthly, categories, abc = results.monthly, results.categories, results.abc
     channels, payments, states = results.channels, results.payments, results.states
@@ -216,7 +236,7 @@ def build_report(results: AnalysisResults) -> str:
     add(f"2. **Mix de produtos:** proteger a disponibilidade dos {len(a_products)} produtos da classe A e revisar os da classe C.")
     add(f"3. **Margem:** priorizar a exposição de {margin_top['category']} (margem {percent(margin_top['margin_pct'])}) "
         f"e revisar preço ou custo de {margin_low['category']} (margem {percent(margin_low['margin_pct'])}).")
-    add(f"4. **Retenção:** criar réguas de reativação para os clientes do segmento \"Em risco\" e programa de fidelidade para os Campeões.")
+    add("4. **Retenção:** criar réguas de reativação para os clientes do segmento \"Em risco\" e programa de fidelidade para os Campeões.")
     add(f"5. **Canais:** investir mais em {CHANNEL_LABELS[best_channel['channel']]} e reavaliar {CHANNEL_LABELS[worst_channel['channel']]}, "
         "após cruzar com o custo de aquisição (não disponível nesta base).")
     add(f"6. **Cupons:** rever o desconto do cupom {worst_coupon['coupon']} (margem de {percent(worst_coupon['margin_pct'])}); "

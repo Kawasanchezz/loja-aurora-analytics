@@ -43,7 +43,7 @@ def run_analysis(engine: Engine) -> AnalysisResults:
         return frame
 
     kpis = fetch("kpis")
-    if kpis.empty or int(kpis.loc[0, "completed_orders"]) == 0:
+    if kpis.empty or int(kpis["completed_orders"].iloc[0]) == 0:
         raise RuntimeError("Não há pedidos concluídos no banco. Rode o comando seed antes do report.")
 
     monthly = fetch("monthly_performance")
@@ -53,7 +53,7 @@ def run_analysis(engine: Engine) -> AnalysisResults:
 
     return AnalysisResults(
         kpis=kpis.iloc[0],
-        customers_total=int(fetch("customer_count").loc[0, "customers"]),
+        customers_total=int(fetch("customer_count")["customers"].iloc[0]),
         order_status=fetch("order_status_summary"),
         monthly=monthly,
         categories=fetch("category_performance"),

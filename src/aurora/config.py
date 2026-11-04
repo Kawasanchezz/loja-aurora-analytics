@@ -43,13 +43,25 @@ def _required(name: str) -> str:
     return value
 
 
+def _integer(name: str, default: str, minimum: int, maximum: int) -> int:
+    """Lê um inteiro do ambiente com mensagem de erro clara (sem traceback para o usuário)."""
+    raw = os.environ.get(name, default)
+    try:
+        value = int(raw)
+    except ValueError as error:
+        raise RuntimeError(f"{name} deve ser um número inteiro (valor recebido: {raw!r}).") from error
+    if not minimum <= value <= maximum:
+        raise RuntimeError(f"{name} deve estar entre {minimum} e {maximum} (valor recebido: {value}).")
+    return value
+
+
 def load_settings() -> Settings:
     load_dotenv(ROOT / ".env")
     return Settings(
         host=os.environ.get("MYSQL_HOST", "127.0.0.1"),
-        port=int(os.environ.get("MYSQL_PORT", "3306")),
+        port=_integer("MYSQL_PORT", "3306", 1, 65535),
         database=_required("MYSQL_DATABASE"),
         user=_required("MYSQL_USER"),
         password=_required("MYSQL_PASSWORD"),
-        seed=int(os.environ.get("SEED", "42")),
+        seed=_integer("SEED", "42", 0, 2**32 - 1),
     )

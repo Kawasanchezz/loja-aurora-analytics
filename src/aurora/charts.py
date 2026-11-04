@@ -7,12 +7,13 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")  # backend sem janela: funciona em servidores e no CI
-import matplotlib.pyplot as plt  # noqa: E402
-import pandas as pd  # noqa: E402
-from matplotlib.axes import Axes  # noqa: E402
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import pandas as pd
+from matplotlib.axes import Axes
 
-from aurora.analysis.pipeline import AnalysisResults  # noqa: E402
-from aurora.labels import CHANNEL_LABELS, PAYMENT_LABELS, brl, month_label, number_br, percent  # noqa: E402
+from aurora.analysis.pipeline import AnalysisResults
+from aurora.labels import CHANNEL_LABELS, PAYMENT_LABELS, brl, month_label, number_br, percent
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def _hbar(ax: Axes, labels: list[str], values: list[float], colors, fmt) -> None
     ax.xaxis.set_visible(False)
     ax.spines["bottom"].set_visible(False)
     limit = max(values) if values else 1
-    for position, value in zip(positions, values):
+    for position, value in zip(positions, values, strict=True):
         ax.text(value + limit * 0.01, position, fmt(value), va="center", fontsize=9)
     ax.set_xlim(0, limit * 1.18)
 
@@ -67,7 +68,7 @@ def monthly_revenue(results: AnalysisResults, directory: Path) -> Path:
     last = monthly.iloc[-1]
     bottom.annotate(percent(last["margin_pct"]), (last["month"], last["margin_pct"]),
                     textcoords="offset points", xytext=(6, 4), fontsize=9, color=GREEN)
-    bottom.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%m/%y"))
+    bottom.xaxis.set_major_formatter(mdates.DateFormatter("%m/%y"))
     fig.tight_layout()
     return _save(fig, directory, "01_receita_margem_mensal.png")
 
