@@ -18,7 +18,7 @@ BATCH_SIZE = 1000
 def to_records(df: pd.DataFrame) -> list[dict[str, Any]]:
     """Converte para tipos nativos do Python; valores ausentes viram None (NULL)."""
     clean = df.astype(object).where(df.notna(), None)
-    return clean.to_dict("records")
+    return [{str(column): value for column, value in row.items()} for row in clean.to_dict("records")]
 
 
 def batches(records: list[dict[str, Any]], size: int = BATCH_SIZE) -> Iterator[list[dict[str, Any]]]:

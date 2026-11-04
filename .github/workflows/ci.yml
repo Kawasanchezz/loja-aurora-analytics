@@ -21,15 +21,15 @@ jobs:
     timeout-minutes: 15
 
     # Banco descartável, criado só durante a execução e destruído no fim.
-    # As senhas abaixo valem apenas para ele; não são credenciais reais.
+    # As senhas são geradas por execução (id da execução) e valem só para ele; não são credenciais reais.
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ci-root-descartavel
+          MYSQL_ROOT_PASSWORD: root-${{ github.run_id }}-${{ github.run_attempt }}  # pragma: allowlist secret
           MYSQL_DATABASE: aurora_test
           MYSQL_USER: aurora
-          MYSQL_PASSWORD: ci-descartavel
+          MYSQL_PASSWORD: ci-${{ github.run_id }}-${{ github.run_attempt }}  # pragma: allowlist secret
         ports:
           - 3306:3306
         options: >-
@@ -43,7 +43,7 @@ jobs:
       MYSQL_PORT: "3306"
       MYSQL_DATABASE: aurora          # banco "principal" (nunca tocado pelos testes)
       MYSQL_USER: aurora
-      MYSQL_PASSWORD: ci-descartavel
+      MYSQL_PASSWORD: ci-${{ github.run_id }}-${{ github.run_attempt }}  # pragma: allowlist secret
       AURORA_TEST_DATABASE: aurora_test
 
     steps:

@@ -7,6 +7,7 @@ from dataclasses import replace
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 from aurora.analysis.pipeline import run_analysis
 from aurora.config import load_settings
@@ -58,8 +59,9 @@ def test_carga_e_idempotente(engine, small_data, loaded):
 
 
 def test_carga_e_atomica_rollback_em_erro(engine, small_data, loaded):
-    quebrado = replace(small_data, order_items=small_data.order_items.assign(product_id=999_999))
-    with pytest.raises(Exception):
+    # 65000 cabe em SMALLINT UNSIGNED, mas não existe em products: viola a chave estrangeira.
+    quebrado = replace(small_data, order_items=small_data.order_items.assign(product_id=65_000))
+    with pytest.raises(IntegrityError):
         load(engine, quebrado)
     with engine.connect() as conn:
         assert conn.execute(text("SELECT COUNT(*) FROM orders")).scalar_one() == len(small_data.orders)

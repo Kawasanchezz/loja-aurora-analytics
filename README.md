@@ -1,6 +1,6 @@
 # Loja Aurora: análise de dados de e-commerce com MySQL e Python
 
-![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Python 3.13](https://img.shields.io/badge/python-3.13-3776AB?logo=python&logoColor=white)
 ![MySQL 8](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
 ![Testes](https://img.shields.io/badge/testes-pytest-0A9EDC?logo=pytest&logoColor=white)
 ![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green)
@@ -154,7 +154,7 @@ Os demais gráficos (cupons, pagamento, estados) estão em [reports/figures/](re
 
 ## Como executar
 
-Requisitos: Python 3.11+ e um MySQL 8 instalado na máquina.
+Requisitos: Python 3.13 (a versão em que o projeto foi testado, localmente e no CI) e um MySQL 8 instalado na máquina.
 
 ### 1. Ambiente Python
 
@@ -213,7 +213,7 @@ Saídas: `reports/report.md` e `reports/figures/*.png`.
 python -m pytest -q
 ```
 
-São 58 testes: 52 rodam sem banco e 6 são de integração com MySQL. Os 52 cobrem o gerador (determinismo, integridade referencial, os padrões plantados),
+São 71 testes: 65 rodam sem banco e 6 são de integração com MySQL. Os 65 cobrem o gerador (determinismo, integridade referencial, os padrões plantados),
 o RFM, as coortes, o parser das consultas, a carga e as travas de segurança.
 
 Os 6 testes de integração (carga em lotes, idempotência, rollback, view sem cancelados, conferência da receita SQL contra pandas e a análise completa)
@@ -277,7 +277,7 @@ reports/                    relatório e figuras gerados
 - Dados simulados: os padrões foram plantados, então as conclusões não valem para um negócio real.
 - Sem custo de frete, de marketing ou de estoque; o lucro é bruto. Sem CAC/ROAS por canal.
 - Cancelamento e devolução são ao nível do pedido, sem estorno parcial nem data de devolução.
-- O pipeline foi validado em um MySQL 8.0.46 instalado localmente; outras versões e sistemas operacionais não foram testados.
+- O pipeline foi validado com Python 3.13 e MySQL 8.0.46 (Windows localmente; Linux no CI). Python 3.11/3.12 e outras versões do MySQL não foram testados.
 - O `requirements.txt` fixa só versões mínimas (`>=`): uma instalação futura pode trazer versões mais novas que as testadas. O CI semanal ajuda a detectar quebras.
 - Os testes de integração exigem um banco de teste configurado e por isso ficam desligados por padrão.
 
@@ -289,7 +289,7 @@ reports/                    relatório e figuras gerados
 
 ## Tecnologias
 
-Python 3.11+, MySQL 8, SQLAlchemy 2, PyMySQL, pandas, NumPy, Faker (pt_BR), Matplotlib, python-dotenv, pytest.
+Python 3.13, MySQL 8, SQLAlchemy 2, PyMySQL, pandas, NumPy, Faker (pt_BR), Matplotlib, python-dotenv, pytest.
 
 ## Licença
 

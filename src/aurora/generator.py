@@ -156,10 +156,9 @@ def _generate_customers(rng: np.random.Generator, fake: Faker, config: Generator
     offsets = np.sort((rng.beta(1.3, 1.0, size=n) * (len(days) - 1)).astype(int))
     offsets[0] = 0
     seconds = rng.integers(0, 86400, size=n)
-    created_at = days[offsets] + pd.to_timedelta(seconds, unit="s")
-    created_at = created_at.to_series().reset_index(drop=True)
-    created_at.iloc[0] = days[0]  # primeiro cliente existe desde a abertura da loja
-    created_at = created_at.sort_values(ignore_index=True)  # ids crescem com a data de cadastro
+    registered = (days[offsets] + pd.to_timedelta(seconds, unit="s")).to_series().reset_index(drop=True)
+    registered.iloc[0] = days[0]  # primeiro cliente existe desde a abertura da loja
+    created_at = registered.sort_values(ignore_index=True)  # ids crescem com a data de cadastro
     channels = list(CHANNELS)
     return pd.DataFrame({
         "id": np.arange(1, n + 1),
@@ -206,8 +205,7 @@ def _assign_coupons(rng: np.random.Generator, stamps: pd.DatetimeIndex,
 
     result = np.where(draw < REGULAR_COUPON_RATE, regular, 0)
     result = np.where(in_christmas & (draw < CHRISTMAS_COUPON_RATE), coupon_ids["NATAL20"], result)
-    result = np.where(in_black_friday & (draw < BLACK_FRIDAY_COUPON_RATE), coupon_ids["BLACK25"], result)
-    return result
+    return np.where(in_black_friday & (draw < BLACK_FRIDAY_COUPON_RATE), coupon_ids["BLACK25"], result)
 
 
 def _assign_status(rng: np.random.Generator, payments: np.ndarray) -> np.ndarray:
@@ -242,8 +240,9 @@ def _generate_items(rng: np.random.Generator, products: pd.DataFrame, has_coupon
     return pd.DataFrame(rows, columns=["id", "order_id", "product_id", "quantity", "unit_price", "unit_cost"])
 
 
-def generate(config: GeneratorConfig = GeneratorConfig()) -> SyntheticData:
-    """Gera todas as tabelas. Determinístico para uma mesma configuração."""
+def generate(config: GeneratorConfig | None = None) -> SyntheticData:
+    """Gera todas as tabelas. Determinístico para uma mesma configuração (padrão: ``GeneratorConfig()``)."""
+    config = config or GeneratorConfig()
     rng = np.random.default_rng(config.seed)
     fake = Faker("pt_BR")
     fake.seed_instance(config.seed)
@@ -254,7 +253,7 @@ def generate(config: GeneratorConfig = GeneratorConfig()) -> SyntheticData:
         [(i, code, pct) for i, (code, pct) in enumerate(COUPONS, start=1)],
         columns=["id", "code", "discount_pct"],
     )
-    coupon_ids = dict(zip(coupons["code"], coupons["id"]))
+    coupon_ids = dict(zip(coupons["code"], coupons["id"], strict=True))
     customers = _generate_customers(rng, fake, config, days)
 
     stamps = _order_timestamps(rng, days, config.n_orders)
@@ -264,7 +263,7 @@ def generate(config: GeneratorConfig = GeneratorConfig()) -> SyntheticData:
     orders = pd.DataFrame({
         "id": np.arange(1, config.n_orders + 1),
         "customer_id": _assign_customers(rng, customers, stamps),
-        "coupon_id": pd.array(np.where(coupon_per_order == 0, pd.NA, coupon_per_order), dtype="Int64"),
+        "coupon_id": pd.Series(coupon_per_order).where(coupon_per_order != 0).astype("Int64"),
         "order_date": stamps,
         "status": _assign_status(rng, payments),
         "payment_method": payments,

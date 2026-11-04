@@ -14,7 +14,7 @@ def parse_queries(sql: str) -> dict[str, str]:
     """Separa o script em ``{nome: consulta}``. Texto antes do primeiro ``-- name:`` é ignorado."""
     matches = list(_NAME.finditer(sql))
     queries: dict[str, str] = {}
-    for current, following in zip(matches, matches[1:] + [None]):
+    for current, following in zip(matches, [*matches[1:], None], strict=True):
         end = following.start() if following else len(sql)
         name = current.group(1)
         if name in queries:
