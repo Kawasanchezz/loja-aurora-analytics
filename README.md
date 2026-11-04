@@ -268,6 +268,9 @@ reports/                    relatório e figuras gerados
 - **Dependências com versões testadas** em `constraints.txt`. Para checar vulnerabilidades conhecidas, rode `pip install pip-audit && pip-audit -r requirements.txt`
   (a ferramenta consulta a base de avisos do PyPI pela internet; ela não foi executada durante o desenvolvimento).
 - **Sem dados pessoais:** tudo é gerado por script; e-mails usam o domínio reservado `example.com`.
+- **Automação no GitHub:** o fluxo [CI e segurança](.github/workflows/ci.yml) roda a cada push, em pull requests e toda segunda-feira: Bandit (análise estática), `pip-audit` (vulnerabilidades nas dependências) e os testes completos, com um MySQL descartável.
+  Ele tem permissão mínima (`contents: read`) e as ações são fixadas por hash de commit. O [Dependabot](.github/dependabot.yml) abre pull requests para atualizar bibliotecas e ações.
+  Os comandos do fluxo foram reproduzidos localmente com sucesso; a primeira execução no GitHub ainda não aconteceu.
 
 ## Limitações e próximos passos
 
